@@ -79,15 +79,15 @@ server.get('/events', eventfulHandler);
 // constructor function 
 function Eventful(event){
     this.link = event.url;
-    this.name = event.country_name;
+    this.name = event.title;
     this.event_date = event.start_time;
-    // this.summery = 
+    this.summery =  event.discreption;
 }
 
 
 //handler
 function eventfulHandler(request, response){
-    let city = request.query['location'];
+    let city = request.query.formatted_query;
     console.log('location', city);
     getEventfulData(city)
         .then((data) =>{
@@ -96,27 +96,17 @@ function eventfulHandler(request, response){
 }
 
 
-function getEventfulData(location) {
-    let city = location;
+function getEventfulData(city) {
 	const url = `http://api.eventful.com/json/events/search?app_key=${EVENTFUL_API_KEY}&location=${city}`;
+	console.log('url',url);
     return superagent.get(url)
         .then((eventData) => {
-		console.log(eventData.body.daily.data);
-		let event = eventData.body.daily.data.map((day) => new Eventful(event));
-		return event;
+			 let info = JSON.parse(eventData.text);
+			 console.log('info',info)
+		let event = info.envents.event.map((day) => new Eventful(day));
+		return  event;
 	});
 }
-
-
-
-
-
-
-
-
-
-
-
 
 server.use('*', (request, response) => {
 	response.status(404).send('sorry, page is not found');
